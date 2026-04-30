@@ -17,7 +17,9 @@ const {
   ipcMain,
   nativeImage,
   nativeTheme,
+  dialog,
 } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 
@@ -55,6 +57,8 @@ const DEFAULT_SETTINGS = {
   currentTheme: 'default',
   isDarkMode: true,
   alwaysOnTop: false,
+  blockSeen: false,
+  blockTyping: false,
 };
 
 function loadSettings() {
@@ -151,9 +155,86 @@ function updateTrayMenu() {
     { label: '🚀 Khởi động cùng Windows', type: 'checkbox', checked: settings.autoLaunch, click: (item) => toggleAutoLaunch(item.checked) },
     { label: '📌 Thu nhỏ xuống Tray khi đóng', type: 'checkbox', checked: settings.minimizeToTray, click: (item) => { settings.minimizeToTray = item.checked; saveSettings(settings); } },
     { type: 'separator' },
+    { label: '🛡️ Bảo mật', submenu: [
+        { label: 'Chặn hiển thị "Đã xem"', type: 'checkbox', checked: settings.blockSeen, click: (item) => toggleBlockSeen(item.checked) },
+        { label: 'Chặn hiển thị "Đang nhập"', type: 'checkbox', checked: settings.blockTyping, click: (item) => toggleBlockTyping(item.checked) }
+    ]},
+    { type: 'separator' },
+    { label: '⬇️ Kiểm tra cập nhật', click: () => checkForUpdates(true) },
+    { type: 'separator' },
     { label: '❌ Thoát hoàn toàn', click: () => { isQuitting = true; app.quit(); } },
   ]);
   tray.setContextMenu(contextMenu);
+}
+
+function toggleBlockSeen(enable) {
+  settings.blockSeen = enable;
+  saveSettings(settings);
+}
+
+function toggleBlockTyping(enable) {
+  settings.blockTyping = enable;
+  saveSettings(settings);
+}
+
+// ============================================================
+//  AUTO UPDATER
+// ============================================================
+let isManualUpdateCheck = false;
+
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = false;
+
+  autoUpdater.on('update-available', (info) => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Có bản cập nhật mới',
+      message: `Đã có bản cập nhật mới v${info.version}. Bạn có muốn tải xuống và cài đặt không?`,
+      buttons: ['Tải xuống', 'Bỏ qua']
+    }).then(result => {
+      if (result.response === 0) {
+        autoUpdater.downloadUpdate();
+      }
+    });
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    if (isManualUpdateCheck) {
+      dialog.showMessageBox({
+        title: 'Không có cập nhật',
+        message: 'Bạn đang sử dụng phiên bản mới nhất.'
+      });
+      isManualUpdateCheck = false;
+    }
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox({
+      title: 'Đã tải xong cập nhật',
+      message: 'Bản cập nhật đã được tải xuống. Ứng dụng sẽ khởi động lại để cài đặt.',
+      buttons: ['Cài đặt và Khởi động lại']
+    }).then(() => {
+      isQuitting = true;
+      autoUpdater.quitAndInstall();
+    });
+  });
+
+  autoUpdater.on('error', (err) => {
+    if (isManualUpdateCheck) {
+      dialog.showErrorBox('Lỗi cập nhật', err == null ? "Lỗi không xác định" : (err.stack || err).toString());
+      isManualUpdateCheck = false;
+    }
+  });
+
+  // Tự động kiểm tra cập nhật khi khởi động
+  setTimeout(() => {
+    autoUpdater.checkForUpdates();
+  }, 5000);
+}
+
+function checkForUpdates(manual = false) {
+  isManualUpdateCheck = manual;
+  autoUpdater.checkForUpdates();
 }
 
 function toggleAutoLaunch(enable) {
@@ -306,6 +387,38 @@ function createWindow() {
   });
 
   app.on('session-created', (sess) => {
+    sess.webRequest.onBeforeRequest({ urls: ['*://*.facebook.com/*', '*://*.messenger.com/*'] }, (details, callback) => {
+      let cancel = false;
+      
+      // Chặn Đã xem (Block Seen)
+      if (settings.blockSeen) {
+        if (details.url.includes('/change_read_status.php') || details.url.includes('/ajax/mercury/change_read_status.php')) {
+          cancel = true;
+        }
+        if (details.uploadData && details.uploadData.length > 0) {
+          const body = details.uploadData[0].bytes ? details.uploadData[0].bytes.toString() : '';
+          if (body.includes('LSThreadMarkRead') || body.includes('markThreadRead') || body.includes('ThreadMarkReadMutation') || body.includes('"name":"mark_read"')) {
+            cancel = true;
+          }
+        }
+      }
+
+      // Chặn Đang nhập (Block Typing)
+      if (settings.blockTyping) {
+        if (details.url.includes('/typ.php') || details.url.includes('/ajax/messaging/typ.php')) {
+          cancel = true;
+        }
+        if (details.uploadData && details.uploadData.length > 0) {
+          const body = details.uploadData[0].bytes ? details.uploadData[0].bytes.toString() : '';
+          if (body.includes('TypingIndicator') || body.includes('LSTypingIndicator') || body.includes('typing_indicator')) {
+            cancel = true;
+          }
+        }
+      }
+
+      callback({ cancel });
+    });
+
     sess.setPermissionRequestHandler((webContents, permission, callback) => {
       const url = webContents.getURL();
       const isFacebook = url.includes('facebook.com') || url.includes('messenger.com') || url.includes('fbcdn.net');
@@ -503,6 +616,7 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   registerGlobalShortcuts();
+  setupAutoUpdater();
 
   app.on('second-instance', () => {
     if (mainWindow) {
