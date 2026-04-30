@@ -24,7 +24,9 @@
   <img src="preview.png" alt="Messlỏ Preview" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);"/>
 </p>
 
-## ✨ Tính năng nổi bật (Bản cập nhật Multi-Account)
+## ✨ Tính năng nổi bật (Bản cập nhật v1.1.0)
+- 🛡️ **Bảo mật Quyền riêng tư (Tương tự J2TEAM Security)** — Hỗ trợ chặn hoàn toàn trạng thái "Đã xem" (Read Receipts) và "Đang nhập" (Typing Indicator). Bạn có thể lướt tin nhắn vô hình một cách an toàn nhất! Bật/tắt dễ dàng qua Menu khay hệ thống (System Tray).
+- ☁️ **Cập nhật Tự động (OTA Auto-Updater)** — Tải xuống và cài đặt trực tiếp các bản cập nhật mới ngay bên trong phần mềm chỉ với một thao tác click. Không cần truy cập Github hay tải file thủ công nữa.
 
 - 👥 **Quản lý Đa Tài Khoản (Multi-Account)** — Đăng nhập và sử dụng nhiều tài khoản Messenger cùng lúc.
 - 🔄 **Chuyển Nick Siêu Nhanh** — Chuyển đổi giữa các tài khoản chỉ với 1 click qua thanh Sidebar chuyên dụng.
@@ -57,6 +59,13 @@ npm run build:portable
 ```
 
 File thành phẩm sẽ xuất hiện trong thư mục `dist/`.
+
+### Xuất bản Cập nhật (Dành cho Developer)
+Để sử dụng tính năng **Auto Updater**, hãy chạy lệnh build sau (yêu cầu cấu hình `GH_TOKEN` environment variable):
+```bash
+npm run build -p always
+```
+Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlỏ Setup 1.1.0.exe` và `latest.yml`.
 
 ## 📂 Cấu trúc dự án
 
