@@ -24,10 +24,17 @@
   <img src="preview.png" alt="Messlỏ Preview" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);"/>
 </p>
 
-## ✨ Tính năng nổi bật (Bản cập nhật v1.1.0)
+## ✨ Tính năng nổi bật (Bản cập nhật v1.1.1)
+
+### 🆕 Mới trong v1.1.1
+- 🧭 **Thanh công cụ bên phải (Right Sidebar)** — Giao diện mới với thanh công cụ tách riêng sang bên phải, thanh trái chỉ chứa danh sách nick. Hỗ trợ nhiều tài khoản hơn mà không bị tràn.
+- 🏠 **Nút Trang chủ Messenger** — Quay về trang chủ tin nhắn nhanh chóng khi đang lạc ở trang cá nhân, nhóm, hay bất kỳ đâu.
+- ◀️ **Nút Quay lại (Back)** — Điều hướng lùi về trang trước đó, giống nút Back trên trình duyệt.
+- 📜 **Cuộn danh sách nick** — Hỗ trợ cuộn chuột, kéo chuột (drag), và nút mũi tên ▲▼ tự ẩn/hiện khi nhiều nick.
+
+### Các tính năng chính
 - 🛡️ **Bảo mật Quyền riêng tư (Tương tự J2TEAM Security)** — Hỗ trợ chặn hoàn toàn trạng thái "Đã xem" (Read Receipts) và "Đang nhập" (Typing Indicator). Bạn có thể lướt tin nhắn vô hình một cách an toàn nhất! Bật/tắt dễ dàng qua Menu khay hệ thống (System Tray).
 - ☁️ **Cập nhật Tự động (OTA Auto-Updater)** — Tải xuống và cài đặt trực tiếp các bản cập nhật mới ngay bên trong phần mềm chỉ với một thao tác click. Không cần truy cập Github hay tải file thủ công nữa.
-
 - 👥 **Quản lý Đa Tài Khoản (Multi-Account)** — Đăng nhập và sử dụng nhiều tài khoản Messenger cùng lúc.
 - 🔄 **Chuyển Nick Siêu Nhanh** — Chuyển đổi giữa các tài khoản chỉ với 1 click qua thanh Sidebar chuyên dụng.
 - 🛡️ **Cô lập Dữ liệu (Sandbox Partitions)** — Mỗi nick sử dụng một Session riêng biệt (Cookies, Cache, LocalStorage tách biệt hoàn toàn), không bao giờ bị dính tài khoản hay block chéo.
@@ -65,15 +72,15 @@ File thành phẩm sẽ xuất hiện trong thư mục `dist/`.
 ```bash
 npm run build -p always
 ```
-Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlỏ Setup 1.1.0.exe` và `latest.yml`.
+Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlỏ Setup 1.1.1.exe` và `latest.yml`.
 
 ## 📂 Cấu trúc dự án
 
 | File / Thư mục | Chức năng |
 |------|-------|
 | `main.js` | Quản lý vòng đời App, Hệ thống Partitions, BrowserView, IPC. |
-| `renderer.js` | Logic điều khiển Sidebar đa tài khoản, Modal UI. |
-| `index.html` | Khung Sidebar & Modal Overlay. |
+| `renderer.js` | Logic điều khiển Sidebar đa tài khoản, Modal UI, cuộn/drag. |
+| `index.html` | Khung Sidebar trái (nick) & Sidebar phải (công cụ) & Modal Overlay. |
 | `preload.js` | Cầu nối an toàn bảo mật giữa DOM và Backend. |
 | `custom_style.css`| Giao diện Dark Glass và ẩn quảng cáo Facebook. |
 | `preview.png` | Ảnh Dummy giao diện hiển thị. |
@@ -90,4 +97,3 @@ Nếu bạn thấy công cụ quản lý siêu tốc này giúp ích cho công v
 ---
 
 *Bản quyền © 2026 bởi truong.it. Phát triển với đam mê.*
-

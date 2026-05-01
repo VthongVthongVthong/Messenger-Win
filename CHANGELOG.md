@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-05-01
+### Added
+- **Thanh công cụ bên phải (Right Sidebar):** Tách riêng thanh công cụ sang phía bên phải giao diện, gồm: Trang chủ, Quay lại, Tải lại, Phóng to/Thu nhỏ, Chế độ tối/sáng, Toàn màn hình, Ghim cửa sổ.
+- **Nút Trang chủ Messenger (Home):** Quay về trang chủ tin nhắn nhanh chóng khi đang ở các trang khác (trang cá nhân, nhóm, v.v.).
+- **Nút Quay lại (Back):** Điều hướng quay lại trang trước đó trong lịch sử duyệt.
+- **Cuộn danh sách tài khoản:** Hỗ trợ cuộn chuột (wheel), kéo chuột (drag), và nút mũi tên ▲▼ tự động hiện/ẩn khi danh sách nick tràn.
+
+### Changed
+- **Sidebar trái** chỉ chứa danh sách tài khoản (avatar) và nút Thêm tài khoản, tối ưu cho nhiều nick.
+- **Ẩn scrollbar trang Messenger** bên trong BrowserView để giao diện gọn gàng hơn.
+- Cập nhật `BrowserView` bounds để hỗ trợ layout 2 sidebar (trái 52px + phải 42px).
+
 ## [1.1.0] - 2026-04-30
 ### Added
 - **Tính năng Bảo mật (Security Features):** 

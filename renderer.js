@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 const profilesList = document.getElementById('profiles-list');
+const scrollUpBtn = document.getElementById('scroll-up');
+const scrollDownBtn = document.getElementById('scroll-down');
 
 // Load profiles
 let profiles = [];
@@ -22,6 +24,91 @@ function saveProfiles() {
   localStorage.setItem('mp_profiles', JSON.stringify(profiles));
 }
 
+// ============================================================
+//  SCROLL ARROWS & DRAG SCROLL
+// ============================================================
+function updateScrollArrows() {
+  if (!profilesList) return;
+  const canScrollUp = profilesList.scrollTop > 0;
+  const canScrollDown = profilesList.scrollTop + profilesList.clientHeight < profilesList.scrollHeight - 1;
+  
+  scrollUpBtn.classList.toggle('visible', canScrollUp);
+  scrollDownBtn.classList.toggle('visible', canScrollDown);
+}
+
+// Scroll arrow buttons
+let scrollInterval = null;
+function startScrolling(direction) {
+  stopScrolling();
+  const step = direction === 'up' ? -4 : 4;
+  scrollInterval = setInterval(() => {
+    profilesList.scrollTop += step;
+    updateScrollArrows();
+  }, 16);
+}
+function stopScrolling() {
+  if (scrollInterval) { clearInterval(scrollInterval); scrollInterval = null; }
+}
+
+scrollUpBtn.addEventListener('mousedown', () => startScrolling('up'));
+scrollUpBtn.addEventListener('mouseup', stopScrolling);
+scrollUpBtn.addEventListener('mouseleave', stopScrolling);
+scrollDownBtn.addEventListener('mousedown', () => startScrolling('down'));
+scrollDownBtn.addEventListener('mouseup', stopScrolling);
+scrollDownBtn.addEventListener('mouseleave', stopScrolling);
+
+// Click to scroll by one item
+scrollUpBtn.addEventListener('click', () => {
+  profilesList.scrollBy({ top: -50, behavior: 'smooth' });
+  setTimeout(updateScrollArrows, 300);
+});
+scrollDownBtn.addEventListener('click', () => {
+  profilesList.scrollBy({ top: 50, behavior: 'smooth' });
+  setTimeout(updateScrollArrows, 300);
+});
+
+// Mouse drag scrolling on profiles list
+let isDragging = false;
+let dragStartY = 0;
+let dragScrollTop = 0;
+
+profilesList.addEventListener('mousedown', (e) => {
+  // Only start drag if clicking on the list itself or between items
+  isDragging = true;
+  dragStartY = e.clientY;
+  dragScrollTop = profilesList.scrollTop;
+  profilesList.classList.add('dragging');
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const diff = dragStartY - e.clientY;
+  profilesList.scrollTop = dragScrollTop + diff;
+  updateScrollArrows();
+});
+
+document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    profilesList.classList.remove('dragging');
+  }
+});
+
+// Mouse wheel scroll
+profilesList.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  profilesList.scrollTop += e.deltaY > 0 ? 50 : -50;
+  updateScrollArrows();
+}, { passive: false });
+
+// Update arrows on content changes
+const resizeObserver = new ResizeObserver(updateScrollArrows);
+resizeObserver.observe(profilesList);
+
+// ============================================================
+//  RENDER SIDEBAR
+// ============================================================
 function renderSidebar() {
   profilesList.innerHTML = '';
   profiles.forEach(p => {
@@ -58,6 +145,9 @@ function renderSidebar() {
     
     profilesList.appendChild(btn);
   });
+  
+  // Update scroll arrows after rendering
+  setTimeout(updateScrollArrows, 50);
 }
 
 function switchProfile(id) {
@@ -69,7 +159,9 @@ function switchProfile(id) {
   }
 }
 
-// Modal Logic
+// ============================================================
+//  MODAL LOGIC
+// ============================================================
 let editingProfile = null;
 let tempAvatarPath = null;
 const modalOverlay = document.getElementById('modal-overlay');
@@ -165,7 +257,9 @@ document.getElementById('modal-save').onclick = () => {
 
 document.getElementById('btn-add-profile').onclick = () => openModal();
 
-// Toolbar
+// ============================================================
+//  RIGHT SIDEBAR TOOLBAR
+// ============================================================
 let isDarkMode = true;
 const toggleDarkMode = () => {
   isDarkMode = !isDarkMode;
@@ -185,8 +279,12 @@ document.getElementById('btn-pin').onclick = () => {
   ipcRenderer.send('toggle-always-on-top');
 };
 document.getElementById('btn-reload').onclick = () => ipcRenderer.send('reload-page');
+document.getElementById('btn-home').onclick = () => ipcRenderer.send('go-home');
+document.getElementById('btn-back').onclick = () => ipcRenderer.send('go-back');
 
-// IPC Updates from Main
+// ============================================================
+//  IPC UPDATES FROM MAIN
+// ============================================================
 ipcRenderer.on('update-profile-badge', (event, { id, count }) => {
   const badge = document.getElementById(`badge-${id}`);
   if (badge) {
@@ -207,7 +305,9 @@ ipcRenderer.on('update-profile-avatar', (event, { id, avatarUrl }) => {
   }
 });
 
-// Init
+// ============================================================
+//  INIT
+// ============================================================
 const settings = ipcRenderer.sendSync('get-settings');
 isDarkMode = settings.isDarkMode;
 document.body.className = isDarkMode ? 'dark-mode' : 'light-mode';

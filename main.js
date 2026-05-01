@@ -258,11 +258,13 @@ function toggleAutoLaunch(enable) {
 function updateBrowserViewBounds() {
   if (!mainWindow || !activeProfileId || !browserViews[activeProfileId]) return;
   const bounds = mainWindow.getContentBounds();
-  // Sidebar is 52px wide
+  // Left sidebar: 52px, Right sidebar: 42px
+  const LEFT_SIDEBAR = 52;
+  const RIGHT_SIDEBAR = 42;
   browserViews[activeProfileId].setBounds({
-    x: 52,
+    x: LEFT_SIDEBAR,
     y: 0,
-    width: Math.max(bounds.width - 52, 0),
+    width: Math.max(bounds.width - LEFT_SIDEBAR - RIGHT_SIDEBAR, 0),
     height: Math.max(bounds.height, 0)
   });
 }
@@ -569,6 +571,19 @@ function createWindow() {
     }
   });
 
+  ipcMain.on('go-home', () => {
+    if (activeProfileId && browserViews[activeProfileId]) {
+      browserViews[activeProfileId].webContents.loadURL(MESSENGER_URL, { userAgent: USER_AGENT });
+    }
+  });
+
+  ipcMain.on('go-back', () => {
+    if (activeProfileId && browserViews[activeProfileId]) {
+      const wc = browserViews[activeProfileId].webContents;
+      if (wc.canGoBack()) wc.goBack();
+    }
+  });
+
   ipcMain.on('get-settings', (event) => {
     event.returnValue = {
       isDarkMode: settings.isDarkMode,
@@ -626,6 +641,9 @@ app.whenReady().then(() => {
   createTray();
   registerGlobalShortcuts();
   setupAutoUpdater();
+
+  // Mở trang Donate khi khởi động ứng dụng
+  shell.openExternal('https://d.truong.it/donate');
 
   app.on('second-instance', () => {
     if (mainWindow) {
