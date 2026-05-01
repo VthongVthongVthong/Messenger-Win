@@ -31,7 +31,8 @@
       "allowToChangeInstallationDirectory": true,
       "installerIcon": "icon.ico",
       "uninstallerIcon": "icon.ico",
-      "shortcutName": "Messlỏ"
+      "shortcutName": "Messlỏ",
+      "artifactName": "Messlo-Setup-${version}.${ext}"
     },
     "files": [
       "main.js",
