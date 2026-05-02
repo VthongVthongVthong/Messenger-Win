@@ -690,9 +690,6 @@ app.whenReady().then(() => {
   registerGlobalShortcuts();
   setupAutoUpdater();
 
-  // Mở trang Donate khi khởi động ứng dụng
-  shell.openExternal('https://d.truong.it/donate');
-
   app.on('second-instance', () => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
